@@ -1,0 +1,13 @@
+const rateLimitMap = new Map();
+
+module.exports = function rateLimit(email, maxRequests = 5, windowMs = 60000) {
+  const now = Date.now();
+  const requests = rateLimitMap.get(email) || [];
+
+  const updated = requests.filter(ts => now - ts < windowMs);
+  if (updated.length >= maxRequests) return false;
+
+  updated.push(now);
+  rateLimitMap.set(email, updated);
+  return true;
+};

@@ -1,0 +1,31 @@
+class CircuitBreaker {
+  constructor(limit = 3) {
+    this.failureCount = 0;
+    this.successCount = 0;
+    this.limit = limit;
+    this.open = false;
+  }
+
+  async call(fn) {
+    if (this.open) throw new Error('Circuit is open');
+
+    try {
+      const result = await fn();
+      this.successCount++;
+      this.failureCount = 0;
+      return result;
+    } catch (err) {
+      this.failureCount++;
+      if (this.failureCount >= this.limit) {
+        this.open = true;
+        setTimeout(() => {
+          this.open = false;
+          this.failureCount = 0;
+        }, 30000);
+      }
+      throw err;
+    }
+  }
+}
+
+module.exports = CircuitBreaker;
